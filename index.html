@@ -10,20 +10,46 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<!-- Add this right after the opening <body> tag -->
-<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-  <symbol id="black-square" viewBox="0 0 100 100">
-    <rect width="100" height="100" fill="black" />
-  </symbol>
-</svg>
-</svg>
-    <div class="time-container">
-        <div id="hours"></div>
-        :
-        <div id="minutes"></div>
-        :
-        <div id="seconds"></div>
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+        <symbol id="black-square" viewBox="0 0 100 100">
+            <rect width="100" height="100" fill="black" />
+        </symbol>
+    </svg>
+    
+    <div class="page-container">
+        <section class="time-section">
+            <div class="time-container">
+                <div id="hours"></div>
+                :
+                <div id="minutes"></div>
+                :
+                <div id="seconds"></div>
+            </div>
+            <a href="#leaderboard" class="scroll-link">View Leaderboard</a>
+        </section>
+
+        <section id="leaderboard" class="leaderboard-section">
+            <div class="leaderboard-container">
+                <h1>Leaderboard</h1>
+                <div id="current-user" class="current-user">
+                    <!-- Current user info will be inserted here -->
+                </div>
+                <table id="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>IP Address</th>
+                            <th>Time Spent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Leaderboard entries will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+            <a href="#" class="scroll-link">Back to Clock</a>
+        </section>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
