@@ -29,7 +29,7 @@
 
 ## How to Use
 
-Simply open the index.html file in a web browser to start using the application. The current time will be displayed prominently, and you can scroll down to view the leaderboard.
+Open index.html
 
 ## Philosophy
 
