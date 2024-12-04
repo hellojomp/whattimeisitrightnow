@@ -1,5 +1,10 @@
 let userIP = 'Loading...';
 
+function isNightTime() {
+    const hour = new Date().getHours();
+    return hour >= 18 || hour < 6;
+}
+
 function getUserIP() {
     fetch('https://api.ipify.org?format=json')
         .then(response => response.json())
@@ -13,12 +18,7 @@ function getUserIP() {
             updateCurrentUser();
         });
 }
-
-function updateCurrentUser() {
-    const currentUserElement = document.getElementById('current-user');
-    const timeSpent = localStorage.getItem('timeSpent') || '0';
-    currentUserElement.innerHTML = `Your IP: ${userIP} | Time spent: ${formatTime(parseInt(timeSpent))}`;
-}function updateTime() {
+function updateTime() {
     const now = new Date();
 
     document.getElementById('hours').textContent = now.getHours().toString().padStart(2, '0');
@@ -26,93 +26,86 @@ function updateCurrentUser() {
     document.getElementById('seconds').textContent = now.getSeconds().toString().padStart(2, '0');
 }
 
+function addHorizontalLine() {
+    const canvas = document.getElementById('backgroundCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let currentPosition = 0;
+
+    function animateLine() {
+        if (currentPosition < 50) {
+            currentPosition += 50 / (10 * 1000);
+        } else if (currentPosition < 75) {
+            currentPosition += 25 / (100 * 1000);
+        } else if (currentPosition < 87.5) {
+            currentPosition += 12.5 / (100 * 1000);
+        } else {
+            currentPosition += 6.25 / (1000 * 1000);
+        }
+
+        const linePosition = canvas.height - (currentPosition / 100 * canvas.height);
+
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw the line
+        ctx.beginPath();
+        ctx.moveTo(0, linePosition);
+        ctx.lineTo(canvas.width, linePosition);
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Draw the time spent text
+        const timeSpent = localStorage.getItem('timeSpent') || '0';
+        const formattedTime = formatTime(parseInt(timeSpent));
+        if (isNightTime()) {
+            ctx.fillStyle = '#fff';
+        } else {
+            ctx.fillStyle = '#000';
+        }
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(formattedTime, canvas.width - 80, linePosition - 8);
+
+        if (currentPosition < 100) {
+            requestAnimationFrame(animateLine);
+        }
+    }
+
+    requestAnimationFrame(animateLine);
+}
+
+
 function createLightBeam() {
+    if (!isNightTime()) {
+        document.body.style.backgroundColor = 'white';
+        document.body.style.color = 'black';
+        addHorizontalLine();
+        return;
+    }
+
+    document.body.style.backgroundColor = 'black';
+    document.body.style.color = 'white';
+
     const container = document.createElement('div');
     container.className = 'light-beam-container';
+
+    addHorizontalLine();
 
     for (let i = 0; i < 3; i++) {
         const lightBeam = document.createElement('div');
         lightBeam.className = `light-beam light-beam-${i + 1}`;
         container.appendChild(lightBeam);
-
-        if (i === 1) {
-            const blackSquare = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            blackSquare.classList.add('black-square');
-            blackSquare.innerHTML = '<use href="#black-square" />';
-            lightBeam.appendChild(blackSquare);
-
-            animateSquare(blackSquare, lightBeam);
-        }
     }
 
     document.querySelector('.time-section').appendChild(container);
 }
 
-function animateSquare(square, container) {
-    let bottom = 10;
-    let size = 50;
-    let lastLineTime = Date.now();
-
-    function step() {
-        bottom += 0.1;
-        size = Math.max(5, 50 * (1 - bottom / 100));
-
-        square.style.bottom = `${bottom}%`;
-        square.style.width = `${size}px`;
-        square.style.height = `${size}px`;
-
-        const currentTime = Date.now();
-        if (currentTime - lastLineTime >= 10000) {
-            addHorizontalLine(container, bottom);
-            lastLineTime = currentTime;
-        }
-
-        if (bottom < 100) {
-            requestAnimationFrame(step);
-        } else {
-            bottom = 10;
-            size = 50;
-            square.style.bottom = `${bottom}%`;
-            square.style.width = `${size}px`;
-            square.style.height = `${size}px`;
-            requestAnimationFrame(step);
-        }
-    }
-
-    requestAnimationFrame(step);
-}
-
-function addHorizontalLine(container, position) {
-    const line = document.createElement('div');
-    line.className = 'horizontal-line';
-    line.style.bottom = `${position}%`;
-    container.appendChild(line);
-
-    setTimeout(() => {
-        container.removeChild(line);
-    }, 10000);
-}
-
-function updateLeaderboard() {
-    // This is a mock function. In a real application, you would fetch data from a server.
-    const mockData = [
-        { ip: '192.168.1.1', timeSpent: 3600 },
-        { ip: '192.168.1.2', timeSpent: 1800 },
-        { ip: '192.168.1.3', timeSpent: 7200 },
-    ];
-
-    const leaderboardBody = document.querySelector('#leaderboard-table tbody');
-    leaderboardBody.innerHTML = '';
-    mockData.forEach(entry => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${entry.ip}</td>
-            <td>${formatTime(entry.timeSpent)}</td>
-        `;
-        leaderboardBody.appendChild(row);
-    });
-
-    updateCurrentUser();
+function updateCurrentUser() {
+    const currentUserElement = document.getElementById('current-user');
+    const timeSpent = localStorage.getItem('timeSpent') || '0';
+    console.log(`Your time: ${formatTime(parseInt(timeSpent))}`);
 }
 
 function formatTime(seconds) {
@@ -127,8 +120,16 @@ updateTime();
 setInterval(updateTime, 1000);
 createLightBeam();
 getUserIP();
-updateLeaderboard();
-setInterval(updateLeaderboard, 10000);
+
+function resizeCanvas() {
+    const canvas = document.getElementById('backgroundCanvas');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
 
 // Track time spent on page
 let startTime = Date.now();
